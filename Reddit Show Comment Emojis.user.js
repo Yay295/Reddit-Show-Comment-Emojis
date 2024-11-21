@@ -4,7 +4,7 @@
 // @namespace     https://github.com/Yay295/Reddit-Show-Comment-Emojis
 // @author        Yay295
 // @match         *://*.reddit.com/*
-// @version       0.5.6
+// @version       0.5.7
 // ==/UserScript==
 
 'use strict';
@@ -44,7 +44,7 @@ async function getEmojiData(subreddit_name) {
 	).map(e => {
 		// map emoji id to url
 		let emoji_id = e.getAttribute('data-media-id').split('|')[2];
-		return {emoji_id: e.src};
+		return {[emoji_id]: e.src};
 	});
 	EMOJI_CACHE[subreddit_name] = emoji_data;
 
