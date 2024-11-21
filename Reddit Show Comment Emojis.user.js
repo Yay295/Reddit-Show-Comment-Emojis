@@ -4,7 +4,7 @@
 // @namespace     https://github.com/Yay295/Reddit-Show-Comment-Emojis
 // @author        Yay295
 // @match         *://*.reddit.com/*
-// @version       0.0.2
+// @version       0.5.0
 // ==/UserScript==
 
 "use strict";
@@ -39,7 +39,8 @@ async function getEmojiData(subreddit_name) {
 	emoji_data = Array.from(
 		emoji_document.querySelectorAll('img[data-media-id]')
 	).map(
-		e => ({'id': e.getAttribute('data-media-id').split('|')[2], 'url': e.src})
+		// map emoji id to url
+		e => ({e.getAttribute('data-media-id').split('|')[2]: e.src})
 	);
 	EMOJI_CACHE[subreddit_name] = emoji_data;
 	return emoji_data;
@@ -47,16 +48,29 @@ async function getEmojiData(subreddit_name) {
 
 const REDDITS = {
 	OLD_REDDIT: {
-		getSubredditName: function() {
-			return null;
-		},
-
 		getComments: function() {
-			return document.querySelector('.commentarea .comment');
+			return document.querySelectorAll('.commentarea .comment');
 		},
 
 		processComments: function(comments) {
-			let subreddit_name = OLD_REDDIT.getSubredditName();
+			let subreddit_name = document.querySelector('div[data-subreddit]').dataset.subreddit;
+			getEmojiData(subreddit_name).then(emoji_data => {
+				for (let comment of comments) {
+					let comment_body_element = comment.querySelector(":scope > .entry > form > div");
+					let comment_body = comment_body_element.innerHTML;
+					let new_comment_body = comment_body.replace(/:(\d+):/, (match,id) => {
+						let emoji_url = emoji_data[id];
+						if (emoji_url) {
+							return '<img alt="Comment Image" title="' + match + '" src="' + emoji_url + '">';
+						} else {
+							return match;
+						}
+					});
+					if (comment_body !== new_comment_body) {
+						comment_body_element.innerHTML = new_comment_body;
+					}
+				}
+			}).catch(error => console.error(error));
 		},
 
 		processMutations: function(mutations) {
