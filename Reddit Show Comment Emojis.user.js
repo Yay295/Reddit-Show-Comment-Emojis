@@ -4,7 +4,7 @@
 // @namespace     https://github.com/Yay295/Reddit-Show-Comment-Emojis
 // @author        Yay295
 // @match         *://*.reddit.com/*
-// @version       0.5.1
+// @version       0.5.2
 // ==/UserScript==
 
 "use strict";
@@ -48,12 +48,12 @@ async function getEmojiData(subreddit_name) {
 }
 
 const REDDITS = {
-	OLD_REDDIT: {
-		getComments: function() {
+	'OLD_REDDIT': {
+		'getComments': function() {
 			return document.querySelectorAll('.commentarea .comment');
 		},
 
-		processComments: function(comments) {
+		'processComments': function(comments) {
 			let subreddit_name = document.querySelector('div[data-subreddit]').dataset.subreddit;
 			getEmojiData(subreddit_name).then(emoji_data => {
 				for (let comment of comments) {
@@ -74,7 +74,7 @@ const REDDITS = {
 			}).catch(error => console.error(error));
 		},
 
-		processMutations: function(mutations) {
+		'processMutations': function(mutations) {
 			let added_comments = [];
 			for (let mutation of mutations) {
 				for (let node of mutation.addedNodes) {
@@ -89,20 +89,16 @@ const REDDITS = {
 		}
 	},
 
-	NEW_REDDIT: {
-		getSubredditName: function() {
-			return null;
-		},
-
-		getComments: function() {
+	'NEW_REDDIT': {
+		'getComments': function() {
 			return [];
 		},
 
-		processComments: function(comments) {
-			let subreddit_name = NEW_REDDIT.getSubredditName();
+		'processComments': function(comments) {
+			let subreddit_name = null;
 		},
 
-		processMutations: function(mutations) {
+		'processMutations': function(mutations) {
 			let added_comments = [];
 			for (let mutation of mutations) {
 				for (let node of mutation.addedNodes) {
