@@ -4,7 +4,7 @@
 // @namespace     https://github.com/Yay295/Reddit-Show-Comment-Emojis
 // @author        Yay295
 // @match         *://*.reddit.com/*
-// @version       0.0.1
+// @version       0.0.2
 // ==/UserScript==
 
 "use strict";
@@ -12,15 +12,37 @@
 const DOM_PARSER = new DOMParser();
 
 const EMOJI_CACHE = {};
+const FETCH_CACHE = {};
 
-async function getEmojis(subreddit_name) {
-	let response = await fetch('https://www.reddit.com/svc/shreddit/composer/emotes?subredditName=' + subreddit_name);
+async function getEmojiData(subreddit_name) {
+	let emoji_data = EMOJI_CACHE[subreddit_name];
+	if (emoji_data) return emoji_data;
+
+	let fetch_promise = FETCH_CACHE[subreddit_name];
+	if (!fetch_promise) {
+		fetch_promise = fetch('https://www.reddit.com/svc/shreddit/composer/emotes?subredditName=' + subreddit_name);
+		FETCH_CACHE[subreddit_name] = fetch_promise;
+	}
+
+	let response = await fetch_promise;
+
+	// check for data again after awaiting
+	emoji_data = EMOJI_CACHE[subreddit_name];
+	if (emoji_data) return emoji_data;
+
 	let emoji_document = DOM_PARSER.parseFromString(await response.text(),'text/html');
-	return Array.from(
+
+	// check for data again after awaiting
+	emoji_data = EMOJI_CACHE[subreddit_name];
+	if (emoji_data) return emoji_data;
+
+	emoji_data = Array.from(
 		emoji_document.querySelectorAll('img[data-media-id]')
 	).map(
 		e => ({'id': e.getAttribute('data-media-id').split('|')[2], 'url': e.src})
 	);
+	EMOJI_CACHE[subreddit_name] = emoji_data;
+	return emoji_data;
 }
 
 const REDDITS = {
