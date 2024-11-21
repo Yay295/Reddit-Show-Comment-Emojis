@@ -4,10 +4,10 @@
 // @namespace     https://github.com/Yay295/Reddit-Show-Comment-Emojis
 // @author        Yay295
 // @match         *://*.reddit.com/*
-// @version       0.5.3
+// @version       0.5.4
 // ==/UserScript==
 
-"use strict";
+'use strict';
 
 const DOM_PARSER = new DOMParser();
 
@@ -57,7 +57,7 @@ const REDDITS = {
 			let subreddit_name = document.querySelector('div[data-subreddit]').dataset.subreddit;
 			getEmojiData(subreddit_name).then(emoji_data => {
 				for (let comment of comments) {
-					let comment_body_element = comment.querySelector(":scope > .entry > form > div");
+					let comment_body_element = comment.querySelector(':scope > .entry > form > div');
 					let comment_body = comment_body_element.innerHTML;
 					let new_comment_body = comment_body.replace(/:(\d+):/, (match,id) => {
 						let emoji_url = emoji_data[id];
