@@ -4,7 +4,7 @@
 // @namespace     https://github.com/Yay295/Reddit-Show-Comment-Emojis
 // @author        Yay295
 // @match         *://*.reddit.com/*
-// @version       0.5.2
+// @version       0.5.3
 // ==/UserScript==
 
 "use strict";
@@ -20,7 +20,7 @@ async function getEmojiData(subreddit_name) {
 
 	let fetch_promise = FETCH_CACHE[subreddit_name];
 	if (!fetch_promise) {
-		fetch_promise = fetch('https://www.reddit.com/svc/shreddit/composer/emotes?subredditName=' + subreddit_name);
+		fetch_promise = fetch(location.origin + '/svc/shreddit/composer/emotes?subredditName=' + subreddit_name);
 		FETCH_CACHE[subreddit_name] = fetch_promise;
 	}
 
