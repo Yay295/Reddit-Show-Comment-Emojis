@@ -66,6 +66,8 @@ const REDDITS = {
 					let new_comment_body = comment_body.replaceAll(/:(\d+):/g, (match,id) => {
 						let emoji_url = emoji_data[id];
 						if (emoji_url) {
+							// This looks better with "vertical-align:text-bottom;margin:0 .25rem" (what it is on New New Reddit),
+							// but Old Reddit doesn't do that, so these emoji would look misaligned next to default emoji.
 							return '<img alt="Comment Image" title="' + match + '" src="' + emoji_url + '" width="20" height="20" style="vertical-align:middle">';
 						} else {
 							return match;
