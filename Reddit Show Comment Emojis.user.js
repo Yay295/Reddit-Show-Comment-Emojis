@@ -4,7 +4,7 @@
 // @namespace     https://github.com/Yay295/Reddit-Show-Comment-Emojis
 // @author        Yay295
 // @match         *://*.reddit.com/*
-// @version       0.5.13
+// @version       0.5.14
 // ==/UserScript==
 
 'use strict';
@@ -60,6 +60,7 @@ const REDDITS = {
 		'processComments': function(comments) {
 			let subreddit_name = document.querySelector('div[data-subreddit]').dataset.subreddit;
 			getEmojiData(subreddit_name).then(emoji_data => {
+				let emojis_replaced = 0;
 				for (let comment of comments) {
 					let comment_body_element = comment.querySelector(':scope > .entry > form > div');
 					if (comment_body_element === null) continue; // if the comment has been deleted
@@ -67,6 +68,7 @@ const REDDITS = {
 					let new_comment_body = comment_body.replaceAll(/:(\d+):/g, (match,id) => {
 						let emoji_url = emoji_data[id];
 						if (emoji_url) {
+							++emojis_replaced;
 							// This looks better with "vertical-align:text-bottom;margin:0 .25rem" (what it is on New New Reddit),
 							// but Old Reddit doesn't do that, so these emoji would look misaligned next to default emoji.
 							return '<img alt="Comment Image" title="' + match + '" src="' + emoji_url + '" width="20" height="20" style="vertical-align:middle">';
@@ -77,6 +79,9 @@ const REDDITS = {
 					if (comment_body !== new_comment_body) {
 						comment_body_element.innerHTML = new_comment_body;
 					}
+				}
+				if (emojis_replaced) {
+					console.log('replaced %i emoji in %i comments', emojis_replaced, comments.length);
 				}
 			}).catch(error => console.error(error));
 		},
