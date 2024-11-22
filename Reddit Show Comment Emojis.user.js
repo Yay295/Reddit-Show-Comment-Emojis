@@ -4,7 +4,7 @@
 // @namespace     https://github.com/Yay295/Reddit-Show-Comment-Emojis
 // @author        Yay295
 // @match         *://*.reddit.com/*
-// @version       1.1.0
+// @version       1.1.1
 // ==/UserScript==
 
 'use strict';
@@ -107,5 +107,7 @@ function processMutations(mutations) {
 // Process comments that are already on the page.
 processComments(document.querySelectorAll('.comment')).catch(error => console.error(error));
 
-// The MutationObserver will be triggered when more comments are loaded on a page.
-new MutationObserver(processMutations).observe(document.body,{subtree:true,childList:true});
+if (document.querySelector('.morecomments')) {
+	// The MutationObserver will be triggered when more comments are loaded on a page.
+	new MutationObserver(processMutations).observe(document.body,{subtree:true,childList:true});
+}
