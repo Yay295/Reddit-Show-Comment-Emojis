@@ -4,7 +4,7 @@
 // @namespace     https://github.com/Yay295/Reddit-Show-Comment-Emojis
 // @author        Yay295
 // @match         *://*.reddit.com/*
-// @version       0.5.15
+// @version       0.5.16
 // ==/UserScript==
 
 'use strict';
@@ -58,6 +58,7 @@ const REDDITS = {
 		},
 
 		'processComments': function(comments) {
+			if (comments.length === 0) return;
 			let subreddit_name = document.querySelector('div[data-subreddit]').dataset.subreddit;
 			getEmojiData(subreddit_name).then(emoji_data => {
 				let start = Date.now();
