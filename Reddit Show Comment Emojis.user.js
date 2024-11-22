@@ -4,7 +4,7 @@
 // @namespace     https://github.com/Yay295/Reddit-Show-Comment-Emojis
 // @author        Yay295
 // @match         *://*.reddit.com/*
-// @version       0.5.16
+// @version       0.5.17
 // ==/UserScript==
 
 'use strict';
@@ -14,6 +14,10 @@ const DOM_PARSER = new DOMParser();
 const EMOJI_CACHE = {};
 const FETCH_CACHE = {};
 
+/**
+ * Gets the comment emoji data for the given subreddit as an object mapping IDs to URLs.
+ * Returns null if there are no emojis.
+ */
 async function getEmojiData(subreddit_name) {
 	let emoji_data = EMOJI_CACHE[subreddit_name];
 	if (emoji_data) return emoji_data;
@@ -40,11 +44,12 @@ async function getEmojiData(subreddit_name) {
 	console.log('fetched emoji document for ' + subreddit_name);
 
 	emoji_data = {};
-	for (let e of emoji_document.querySelectorAll('img[data-media-id]')) {
+	let img_elements = emoji_document.querySelectorAll('img[data-media-id]');
+	for (let e of img_elements) {
 		let emoji_id = e.getAttribute('data-media-id').split('|')[2];
 		emoji_data[emoji_id] = e.src;
 	}
-	EMOJI_CACHE[subreddit_name] = emoji_data;
+	EMOJI_CACHE[subreddit_name] = img_elements.length === 0 ? null : emoji_data;
 
 	console.log('got emoji data for ' + subreddit_name, emoji_data);
 
@@ -61,6 +66,7 @@ const REDDITS = {
 			if (comments.length === 0) return;
 			let subreddit_name = document.querySelector('div[data-subreddit]').dataset.subreddit;
 			getEmojiData(subreddit_name).then(emoji_data => {
+				if (emoji_data === null) return;
 				let start = Date.now();
 				let emojis_replaced = 0;
 				for (let comment of comments) {
