@@ -4,7 +4,7 @@
 // @namespace     https://github.com/Yay295/Reddit-Show-Comment-Emojis
 // @author        Yay295
 // @match         *://*.reddit.com/*
-// @version       0.5.17
+// @version       1.0.0
 // ==/UserScript==
 
 'use strict';
@@ -56,95 +56,57 @@ async function getEmojiData(subreddit_name) {
 	return emoji_data;
 }
 
-const REDDITS = {
-	'OLD_REDDIT': {
-		'getComments': function() {
-			return document.querySelectorAll('.commentarea .comment');
-		},
-
-		'processComments': function(comments) {
-			if (comments.length === 0) return;
-			let subreddit_name = document.querySelector('div[data-subreddit]').dataset.subreddit;
-			getEmojiData(subreddit_name).then(emoji_data => {
-				if (emoji_data === null) return;
-				let start = Date.now();
-				let emojis_replaced = 0;
-				for (let comment of comments) {
-					let comment_body_element = comment.querySelector(':scope > .entry > form > div');
-					if (comment_body_element === null) continue; // if the comment has been deleted
-					let comment_body = comment_body_element.innerHTML;
-					let new_comment_body = comment_body.replaceAll(/:(\d+):/g, (match,id) => {
-						let emoji_url = emoji_data[id];
-						if (emoji_url) {
-							++emojis_replaced;
-							// This looks better with "vertical-align:text-bottom;margin:0 .25rem" (what it is on New New Reddit),
-							// but Old Reddit doesn't do that, so these emoji would look misaligned next to default emoji.
-							return '<img alt="Comment Image" title="' + match + '" src="' + emoji_url + '" width="20" height="20" style="vertical-align:middle">';
-						} else {
-							return match;
-						}
-					});
-					if (comment_body !== new_comment_body) {
-						comment_body_element.innerHTML = new_comment_body;
-					}
+function processComments(comments) {
+	if (comments.length === 0) return;
+	let subreddit_name = document.querySelector('div[data-subreddit]').dataset.subreddit;
+	getEmojiData(subreddit_name).then(emoji_data => {
+		if (emoji_data === null) return;
+		let start = Date.now();
+		let emojis_replaced = 0;
+		for (let comment of comments) {
+			let comment_body_element = comment.querySelector(':scope > .entry > form > div');
+			if (comment_body_element === null) continue; // if the comment has been deleted
+			let comment_body = comment_body_element.innerHTML;
+			let new_comment_body = comment_body.replaceAll(/:(\d+):/g, (match,id) => {
+				let emoji_url = emoji_data[id];
+				if (emoji_url) {
+					++emojis_replaced;
+					// This looks better with "vertical-align:text-bottom;margin:0 .25rem" (what it is on New New Reddit),
+					// but Old Reddit doesn't do that, so these emoji would look misaligned next to default emoji.
+					return '<img alt="Comment Image" title="' + match + '" src="' + emoji_url + '" width="20" height="20" style="vertical-align:middle">';
+				} else {
+					return match;
 				}
-				if (emojis_replaced) {
-					console.log('replaced %i emoji in %i comments in %ims', emojis_replaced, comments.length, Date.now() - start);
-				}
-			}).catch(error => console.error(error));
-		},
-
-		'processMutations': function(mutations) {
-			let added_comments = [];
-			for (let mutation of mutations) {
-				for (let node of mutation.addedNodes) {
-					if (node.classList && node.classList.contains('comment')) {
-						added_comments.add(node);
-					}
-				}
-			}
-			if (added_comments.length > 0) {
-				processComments(added_comments);
+			});
+			if (comment_body !== new_comment_body) {
+				comment_body_element.innerHTML = new_comment_body;
 			}
 		}
-	},
-
-	'NEW_REDDIT': {
-		'getComments': function() {
-			return [];
-		},
-
-		'processComments': function(comments) {
-			let subreddit_name = null;
-		},
-
-		'processMutations': function(mutations) {
-			let added_comments = [];
-			for (let mutation of mutations) {
-				for (let node of mutation.addedNodes) {
-					if (false /* TODO */) {
-						added_comments.add(node);
-					}
-				}
-			}
-			if (added_comments.length > 0) {
-				processComments(added_comments);
-			}
+		if (emojis_replaced) {
+			console.log('replaced %i emoji in %i comments in %ims', emojis_replaced, comments.length, Date.now() - start);
 		}
-	}
-};
-
-// Process comments that are already on the page.
-for (let reddit of Object.values(REDDITS)) {
-	reddit.processComments(reddit.getComments());
+	}).catch(error => console.error(error));
 }
 
-// The MutationObserver will be triggered when more comments are loaded on a
-// page and when an SPA navigation happens (among many other unrelated things).
-new MutationObserver(
-	mutations => {
-		for (let reddit of Object.values(REDDITS)) {
-			reddit.processMutations(mutations);
+function processMutations(mutations) {
+	let added_comments = [];
+	for (let mutation of mutations) {
+		for (let node of mutation.addedNodes) {
+			if (node.classList && node.classList.contains('comment')) {
+				added_comments.add(node);
+			}
 		}
 	}
-).observe(document.body,{subtree:true,childList:true});
+	if (added_comments.length > 0) {
+		processComments(added_comments);
+	}
+}
+
+let comment_area = document.querySelector('.commentarea');
+if (comment_area !== null) {
+	// Process comments that are already on the page.
+	processComments(comment_area.querySelectorAll('.comment'));
+
+	// The MutationObserver will be triggered when more comments are loaded on a page.
+	new MutationObserver(processMutations).observe(document.body,{subtree:true,childList:true});
+}
