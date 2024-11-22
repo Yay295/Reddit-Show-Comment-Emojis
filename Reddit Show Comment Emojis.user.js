@@ -4,7 +4,7 @@
 // @namespace     https://github.com/Yay295/Reddit-Show-Comment-Emojis
 // @author        Yay295
 // @match         *://*.reddit.com/*
-// @version       0.5.12
+// @version       0.5.13
 // ==/UserScript==
 
 'use strict';
@@ -62,6 +62,7 @@ const REDDITS = {
 			getEmojiData(subreddit_name).then(emoji_data => {
 				for (let comment of comments) {
 					let comment_body_element = comment.querySelector(':scope > .entry > form > div');
+					if (comment_body_element === null) continue; // if the comment has been deleted
 					let comment_body = comment_body_element.innerHTML;
 					let new_comment_body = comment_body.replaceAll(/:(\d+):/g, (match,id) => {
 						let emoji_url = emoji_data[id];
