@@ -4,7 +4,7 @@
 // @namespace     https://github.com/Yay295/Reddit-Show-Comment-Emojis
 // @author        Yay295
 // @match         *://*.reddit.com/*
-// @version       0.5.8
+// @version       0.5.9
 // ==/UserScript==
 
 'use strict';
@@ -66,7 +66,7 @@ const REDDITS = {
 					let new_comment_body = comment_body.replace(/:(\d+):/, (match,id) => {
 						let emoji_url = emoji_data[id];
 						if (emoji_url) {
-							return '<img alt="Comment Image" title="' + match + '" src="' + emoji_url + '">';
+							return '<img alt="Comment Image" title="' + match + '" src="' + emoji_url + '" width="20" height="20" style="vertical-align:middle">';
 						} else {
 							return match;
 						}
